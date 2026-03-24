@@ -21,11 +21,20 @@ export async function initSocket(httpServer: HttpServer): Promise<void> {
     path: '/socket.io',
   })
 
-  // Redis adapter for horizontal scaling
-  const pubClient = redis.duplicate()
-  const subClient = redis.duplicate()
-  await Promise.all([pubClient.connect(), subClient.connect()])
-  io.adapter(createAdapter(pubClient, subClient))
+  // Redis adapter for horizontal scaling (optional — skip if Redis unavailable)
+  try {
+    if (redis.status === 'ready' || redis.status === 'connecting') {
+      const pubClient = redis.duplicate()
+      const subClient = redis.duplicate()
+      await Promise.all([pubClient.connect(), subClient.connect()])
+      io.adapter(createAdapter(pubClient, subClient))
+      logger.info('Socket.io Redis adapter enabled')
+    } else {
+      logger.warn('Socket.io running without Redis adapter — no horizontal scaling')
+    }
+  } catch (err) {
+    logger.warn('Socket.io Redis adapter failed — running in single-instance mode', { err: String(err) })
+  }
 
   const analytics = io.of('/analytics')
 
@@ -64,20 +73,26 @@ export async function initSocket(httpServer: HttpServer): Promise<void> {
     })
   })
 
-  // Broadcast live stats every 5s for all active project rooms
+  // Broadcast live stats every 5s (only if Redis available)
   setInterval(async () => {
-    const rooms = io.of('/analytics').adapter.rooms
-    for (const [roomName] of rooms) {
-      if (!roomName.startsWith('project:')) continue
-      const projectId = roomName.replace('project:', '')
-      const key = `stats:epm:${projectId}`
-      const count = await redis.getdel(key)
-      io.of('/analytics')
-        .to(roomName)
-        .emit('live:stats', {
-          projectId,
-          eventsPerInterval: Number(count || 0),
-        })
+    try {
+      if (redis.status !== 'ready') return
+
+      const rooms = io.of('/analytics').adapter.rooms
+      for (const [roomName] of rooms) {
+        if (!roomName.startsWith('project:')) continue
+        const projectId = roomName.replace('project:', '')
+        const key = `stats:epm:${projectId}`
+        const count = await redis.getdel(key)
+        io.of('/analytics')
+          .to(roomName)
+          .emit('live:stats', {
+            projectId,
+            eventsPerInterval: Number(count || 0),
+          })
+      }
+    } catch {
+      // Redis unavailable, skip this interval
     }
   }, REALTIME_STATS_INTERVAL)
 
