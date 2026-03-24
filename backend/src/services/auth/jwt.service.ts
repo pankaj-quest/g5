@@ -6,6 +6,6 @@ export function signToken(userId: Types.ObjectId, orgId: Types.ObjectId): string
   return jwt.sign(
     { userId: userId.toString(), orgId: orgId.toString() },
     env.JWT_SECRET,
-    { expiresIn: env.JWT_EXPIRES_IN }
+    { expiresIn: env.JWT_EXPIRES_IN } as jwt.SignOptions
   )
 }

@@ -87,5 +87,5 @@ async function _runRetention(query: RetentionQuery) {
     { $sort: { '_id.cohortPeriod': 1, '_id.periodOffset': 1 } },
   ]
 
-  return Event.aggregate(pipeline)
+  return Event.aggregate(pipeline as any)
 }

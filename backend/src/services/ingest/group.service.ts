@@ -56,7 +56,7 @@ export async function applyGroupOperation(
     }).lean()
     const setOnceOps: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(payload.$set_once)) {
-      if (!profile?.properties || !(profile.properties as Map<string, unknown>).has?.(k)) {
+      if (!profile?.properties || !(profile.properties as unknown as Map<string, unknown>).has?.(k)) {
         setOnceOps[`properties.${k}`] = v
       }
     }

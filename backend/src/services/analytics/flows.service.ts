@@ -30,7 +30,7 @@ async function _runFlows(query: FlowsQuery) {
 
   const pipeline = [
     { $match: matchStage },
-    { $sort: { distinctId: 1, time: 1 } },
+    { $sort: { distinctId: 1 as const, time: 1 as const } },
     {
       $group: {
         _id: '$distinctId',
@@ -49,9 +49,9 @@ async function _runFlows(query: FlowsQuery) {
       },
     },
     { $match: { count: { $gte: query.minUsers } } },
-    { $sort: { count: -1 } },
+    { $sort: { count: -1 as const } },
     { $limit: 100 },
   ]
 
-  return Event.aggregate(pipeline)
+  return Event.aggregate(pipeline as any)
 }

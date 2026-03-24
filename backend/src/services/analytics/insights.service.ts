@@ -67,5 +67,5 @@ async function _runInsights(query: InsightsQuery) {
     pipeline.push({ $addFields: { count: '$total' } })
   }
 
-  return Event.aggregate(pipeline)
+  return Event.aggregate(pipeline as any)
 }
