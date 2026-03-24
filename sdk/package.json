@@ -1,7 +1,14 @@
 {
-  "name": "@g5/sdk",
-  "version": "1.0.0",
-  "description": "G5 Analytics SDK",
+  "name": "g5-analytics",
+  "version": "1.0.1",
+  "description": "Developer-first analytics SDK. Track events, identify users, and analyze behavior.",
+  "author": "pankaj-quest",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pankaj-quest/g5"
+  },
+  "keywords": ["analytics", "tracking", "events", "mixpanel", "g5"],
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "browser": "dist/index.umd.js",

@@ -6,7 +6,7 @@ import { People } from '../api/people.js'
 import { GroupClient } from '../api/groups.js'
 import { sendEvents, sendSingle } from '../api/transport.js'
 
-const DEFAULT_API_HOST = 'https://api.g5analytics.com'
+const DEFAULT_API_HOST = 'https://g5-api-757475034422.asia-south1.run.app'
 const DEFAULT_BATCH_SIZE = 50
 const DEFAULT_FLUSH_INTERVAL = 10000 // 10s
 
