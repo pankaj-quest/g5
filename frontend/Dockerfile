@@ -5,8 +5,7 @@ COPY package.json ./
 RUN npm install
 COPY . .
 
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_API_URL=https://g5-api-757475034422.asia-south1.run.app
 
 RUN npx vite build
 
