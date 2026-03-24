@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 import { User } from '../models/User.model.js'
 import { Organization } from '../models/Organization.model.js'
@@ -37,10 +38,13 @@ export async function register(req: Request, res: Response) {
   await User.updateOne({ _id: user._id }, { $push: { orgMemberships: org._id } })
 
   // Auto-create a default project
+  const secretKey = crypto.randomBytes(32).toString('hex')
+  const secretKeyHash = await bcrypt.hash(secretKey, 10)
   const project = await Project.create({
     orgId: org._id,
     name: `${orgName} - Default`,
     timezone: 'UTC',
+    secretKeyHash,
   })
 
   const token = signToken(user._id, org._id)
