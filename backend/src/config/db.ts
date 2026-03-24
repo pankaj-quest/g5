@@ -4,11 +4,10 @@ import { logger } from '../utils/logger.js'
 
 export async function connectDB(): Promise<void> {
   try {
-    await mongoose.connect(env.MONGODB_URI)
+    await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 10000 })
     logger.info('MongoDB connected')
   } catch (err) {
-    logger.error('MongoDB connection error', err)
-    process.exit(1)
+    logger.error('MongoDB connection failed — server will start but DB operations will fail', err)
   }
 
   mongoose.connection.on('disconnected', () => logger.warn('MongoDB disconnected'))

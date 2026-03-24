@@ -10,7 +10,9 @@ import { logger } from './utils/logger.js'
 
 async function bootstrap() {
   await connectDB()
-  await redis.connect()
+  await redis.connect().catch((err) => {
+    logger.warn('Redis connection failed — caching and realtime features will be unavailable', { err: String(err) })
+  })
 
   const app = createApp()
   const httpServer = http.createServer(app)
