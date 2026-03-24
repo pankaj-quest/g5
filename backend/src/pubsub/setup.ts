@@ -28,9 +28,7 @@ export async function ensurePubSubTopics(): Promise<void> {
     const topic = pubsub.topic(topicName)
     const [topicExists] = await topic.exists()
     if (!topicExists) {
-      await topic.create({
-        messageRetentionDuration: { seconds: 7 * 24 * 3600 }, // 7 days
-      })
+      await topic.create()
       logger.info(`Created Pub/Sub topic: ${topicName}`)
     }
 
