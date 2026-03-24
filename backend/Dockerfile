@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json ./
 RUN npm install --production=false
 COPY . .
-RUN npx tsc -p tsconfig.build.json
+RUN npx tsc -p tsconfig.build.json; test -f dist/index.js
 
 FROM node:20-alpine AS runner
 
