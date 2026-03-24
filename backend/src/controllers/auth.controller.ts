@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
 import { User } from '../models/User.model.js'
 import { Organization } from '../models/Organization.model.js'
+import { Project } from '../models/Project.model.js'
 import { signToken } from '../services/auth/jwt.service.js'
 
 export async function register(req: Request, res: Response) {
@@ -35,8 +36,15 @@ export async function register(req: Request, res: Response) {
 
   await User.updateOne({ _id: user._id }, { $push: { orgMemberships: org._id } })
 
+  // Auto-create a default project
+  const project = await Project.create({
+    orgId: org._id,
+    name: `${orgName} - Default`,
+    timezone: 'UTC',
+  })
+
   const token = signToken(user._id, org._id)
-  res.status(201).json({ token, userId: user._id, orgId: org._id })
+  res.status(201).json({ token, userId: user._id, orgId: org._id, projectId: project._id, projectToken: project.token })
 }
 
 export async function login(req: Request, res: Response) {
