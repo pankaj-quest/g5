@@ -1,0 +1,79 @@
+# ─────────────────────────────────────────────────
+# G5 Analytics — Backend CI/CD (Cloud Build → Cloud Run)
+# Triggers on push to main branch
+# Frontend is deployed separately via AWS Amplify
+# ─────────────────────────────────────────────────
+
+substitutions:
+  _REGION: asia-south1
+  _SERVICE: g5-api
+  _REPO: g5
+
+steps:
+  # ── Build Backend Image ──
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest'
+      - '-f'
+      - 'backend/Dockerfile'
+      - 'backend'
+
+  # ── Push to Artifact Registry ──
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}'
+    waitFor: ['build']
+
+  # ── Deploy to Cloud Run ──
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE}'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--port'
+      - '8080'
+      # ── Production Resources ──
+      - '--memory'
+      - '4Gi'
+      - '--cpu'
+      - '4'
+      - '--cpu-boost'
+      # ── Autoscaling ──
+      - '--min-instances'
+      - '3'
+      - '--max-instances'
+      - '50'
+      - '--concurrency'
+      - '250'
+      # ── Startup ──
+      - '--execution-environment'
+      - 'gen2'
+      - '--allow-unauthenticated'
+      - '--timeout'
+      - '300'
+      - '--set-env-vars'
+      - 'NODE_ENV=production,PUBSUB_ENABLED=true,GCP_PROJECT_ID=$PROJECT_ID,KAFKA_ENABLED=false'
+    waitFor: ['push']
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'

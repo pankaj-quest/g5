@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Dark Theme (default) ─── */
+:root {
+  --surface-0: #0a0a0a;
+  --surface-1: #111111;
+  --surface-2: #171717;
+  --surface-3: #1c1c1c;
+  --surface-4: #232323;
+
+  --border: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-strong: rgba(255, 255, 255, 0.1);
+
+  --text-primary: #ededed;
+  --text-secondary: #a0a0a0;
+  --text-tertiary: #666666;
+  --text-quaternary: #444444;
+
+  --accent: #ffffff;
+  --accent-muted: rgba(255, 255, 255, 0.06);
+  --accent-hover: rgba(255, 255, 255, 0.1);
+
+  --btn-bg: #ffffff;
+  --btn-text: #000000;
+  --btn-hover: rgba(255, 255, 255, 0.9);
+
+  --chart-line: #ffffff;
+  --chart-grid: rgba(255, 255, 255, 0.03);
+  --chart-tick: #444444;
+  --chart-tooltip-bg: #1c1c1c;
+  --chart-tooltip-border: rgba(255, 255, 255, 0.06);
+
+  --retention-high: rgba(255, 255, 255, 0.20);
+  --retention-med: rgba(255, 255, 255, 0.12);
+  --retention-low: rgba(255, 255, 255, 0.07);
+  --retention-vlow: rgba(255, 255, 255, 0.04);
+
+  --scrollbar-thumb: rgba(255, 255, 255, 0.08);
+  --scrollbar-hover: rgba(255, 255, 255, 0.14);
+
+  color-scheme: dark;
+}
+
+/* ─── Light Theme ─── */
+.light {
+  --surface-0: #ffffff;
+  --surface-1: #f9f9f9;
+  --surface-2: #f3f3f3;
+  --surface-3: #ebebeb;
+  --surface-4: #e0e0e0;
+
+  --border: rgba(0, 0, 0, 0.06);
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --border-strong: rgba(0, 0, 0, 0.12);
+
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --text-tertiary: #888888;
+  --text-quaternary: #aaaaaa;
+
+  --accent: #111111;
+  --accent-muted: rgba(0, 0, 0, 0.04);
+  --accent-hover: rgba(0, 0, 0, 0.07);
+
+  --btn-bg: #111111;
+  --btn-text: #ffffff;
+  --btn-hover: #222222;
+
+  --chart-line: #111111;
+  --chart-grid: rgba(0, 0, 0, 0.04);
+  --chart-tick: #aaaaaa;
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-border: rgba(0, 0, 0, 0.08);
+
+  --retention-high: rgba(0, 0, 0, 0.16);
+  --retention-med: rgba(0, 0, 0, 0.10);
+  --retention-low: rgba(0, 0, 0, 0.06);
+  --retention-vlow: rgba(0, 0, 0, 0.03);
+
+  --scrollbar-thumb: rgba(0, 0, 0, 0.1);
+  --scrollbar-hover: rgba(0, 0, 0, 0.18);
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--surface-0);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--surface-0);
+  color: var(--text-primary);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+::selection {
+  background: var(--accent-hover);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+select option {
+  background-color: var(--surface-2);
+  color: var(--text-primary);
+}
