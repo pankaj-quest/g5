@@ -68,7 +68,7 @@ steps:
       - '--timeout'
       - '300'
       - '--set-env-vars'
-      - 'NODE_ENV=production,PUBSUB_ENABLED=true,GCP_PROJECT_ID=$PROJECT_ID,KAFKA_ENABLED=false'
+      - 'NODE_ENV=production,PUBSUB_ENABLED=true,GCP_PROJECT_ID=$PROJECT_ID,KAFKA_ENABLED=false,CORS_ORIGIN=https://g5-web-757475034422.asia-south1.run.app'
     waitFor: ['push']
 
 images:
