@@ -15,7 +15,14 @@ export function createApp() {
   // Trust proxy (Cloud Run, load balancers) — required for rate limiting + X-Forwarded-For
   app.set('trust proxy', true)
 
-  app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }))
+  // SDK ingest endpoints must allow any origin (called from customer websites)
+  const sdkCors = cors({ origin: true, credentials: false })
+  // Dashboard/auth endpoints use restricted origin
+  const dashCors = cors({
+    origin: env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN,
+    credentials: true,
+  })
+
   app.use(compression())
   app.use(express.json({ limit: '11mb' })) // slightly above 10MB batch limit
 
@@ -28,8 +35,15 @@ export function createApp() {
     validate: { xForwardedForHeader: false },
   })
 
-  app.use('/track', ingestLimiter)
-  app.use('/import', ingestLimiter)
+  app.use('/track', sdkCors, ingestLimiter)
+  app.use('/import', sdkCors, ingestLimiter)
+  app.use('/engage', sdkCors)
+  app.use('/groups', sdkCors)
+
+  // Dashboard routes use restricted CORS
+  app.use('/auth', dashCors)
+  app.use('/projects', dashCors)
+  app.use('/analytics', dashCors)
 
   // Routes
   app.use('/', ingestRoutes) // /track, /import, /engage, /groups at root (Mixpanel-compatible)
@@ -49,6 +63,18 @@ export function createApp() {
       { $group: { _id: '$projectId', count: { $sum: 1 } } }
     ])
     res.json({ totalEvents, projects, eventsByProject })
+  })
+
+  // Debug endpoint to list recent events
+  app.get('/debug/events', async (req, res) => {
+    const { Event } = await import('./models/Event.model.js')
+    const limit = Math.min(Number(req.query.limit) || 50, 200)
+    const events = await Event.find()
+      .sort({ timestamp: -1 })
+      .limit(limit)
+      .select('event properties.distinct_id timestamp')
+      .lean()
+    res.json(events)
   })
 
   app.use(errorHandler)
