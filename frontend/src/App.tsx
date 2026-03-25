@@ -16,6 +16,7 @@ import { FlowsPage } from './pages/flows/FlowsPage.js'
 import { EventsPage } from './pages/events/EventsPage.js'
 import { PeopleList } from './pages/people/PeopleList.js'
 import { SettingsPage } from './pages/settings/SettingsPage.js'
+import { PersonDetail } from './pages/people/PersonDetail.js'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30000, retry: 1 } },
@@ -84,6 +85,7 @@ export default function App() {
                   <Route path="/flows" element={<FlowsPage />} />
                   <Route path="/events" element={<EventsPage />} />
                   <Route path="/people" element={<PeopleList />} />
+                <Route path="/people/:profileId" element={<PersonDetail />} />
                 <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 </Route>

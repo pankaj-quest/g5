@@ -13,11 +13,15 @@ export class People {
   }
 
   private async send(ops: Record<string, unknown>): Promise<void> {
-    await sendSingle(this.apiHost, '/engage', {
-      $distinct_id: this.identity.distinctId,
-      $token: this.token,
-      ...ops,
-    })
+    try {
+      await sendSingle(this.apiHost, this.token, '/engage', {
+        $distinct_id: this.identity.distinctId,
+        $token: this.token,
+        ...ops,
+      })
+    } catch (err) {
+      console.warn('[G5] people operation failed', err)
+    }
   }
 
   async set(properties: Record<string, unknown>): Promise<void> {

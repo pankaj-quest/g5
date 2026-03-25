@@ -86,7 +86,7 @@
       },
     },
     "sdk": {
-      "name": "@g5/sdk",
+      "name": "g5-analytics",
       "version": "1.0.0",
       "devDependencies": {
         "@rollup/plugin-commonjs": "^28.0.0",
@@ -224,8 +224,6 @@
     "@g5/backend": ["@g5/backend@workspace:backend"],
 
     "@g5/frontend": ["@g5/frontend@workspace:frontend"],
-
-    "@g5/sdk": ["@g5/sdk@workspace:sdk"],
 
     "@google-cloud/paginator": ["@google-cloud/paginator@6.0.0", "", { "dependencies": { "extend": "^3.0.2" } }, "sha512-g5nmMnzC+94kBxOKkLGpK1ikvolTFCC3s2qtE4F+1EuArcJ7HHC23RDQVt3Ra3CqpUYZ+oXNKZ8n5Cn5yug8DA=="],
 
@@ -830,6 +828,8 @@
     "fsevents": ["fsevents@2.3.3", "", { "os": "darwin" }, "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw=="],
 
     "function-bind": ["function-bind@1.1.2", "", {}, "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA=="],
+
+    "g5-analytics": ["g5-analytics@workspace:sdk"],
 
     "gaxios": ["gaxios@7.1.4", "", { "dependencies": { "extend": "^3.0.2", "https-proxy-agent": "^7.0.1", "node-fetch": "^3.3.2" } }, "sha512-bTIgTsM2bWn3XklZISBTQX7ZSddGW+IO3bMdGaemHZ3tbqExMENHLx6kKZ/KlejgrMtj8q7wBItt51yegqalrA=="],
 

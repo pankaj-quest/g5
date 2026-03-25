@@ -14,12 +14,16 @@ export class GroupClient {
   }
 
   private async send(ops: Record<string, unknown>): Promise<void> {
-    await sendSingle(this.apiHost, '/groups', {
-      $token: this.token,
-      $group_key: this.groupKey,
-      $group_id: this.groupId,
-      ...ops,
-    })
+    try {
+      await sendSingle(this.apiHost, this.token, '/groups', {
+        $token: this.token,
+        $group_key: this.groupKey,
+        $group_id: this.groupId,
+        ...ops,
+      })
+    } catch (err) {
+      console.warn('[G5] group operation failed', err)
+    }
   }
 
   async set(properties: Record<string, unknown>): Promise<void> {

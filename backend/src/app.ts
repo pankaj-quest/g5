@@ -12,6 +12,9 @@ import analyticsRoutes from './routes/analytics.routes.js'
 export function createApp() {
   const app = express()
 
+  // Trust proxy (Cloud Run, load balancers) — required for rate limiting + X-Forwarded-For
+  app.set('trust proxy', true)
+
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }))
   app.use(compression())
   app.use(express.json({ limit: '11mb' })) // slightly above 10MB batch limit
@@ -22,6 +25,7 @@ export function createApp() {
     max: 10000,
     standardHeaders: true,
     legacyHeaders: false,
+    validate: { xForwardedForHeader: false },
   })
 
   app.use('/track', ingestLimiter)

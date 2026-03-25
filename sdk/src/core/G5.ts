@@ -4,7 +4,7 @@ import { EventQueue } from './EventQueue.js'
 import { IdentityManager } from '../identity/IdentityManager.js'
 import { People } from '../api/people.js'
 import { GroupClient } from '../api/groups.js'
-import { sendEvents, sendSingle } from '../api/transport.js'
+import { sendEvents } from '../api/transport.js'
 
 const DEFAULT_API_HOST = 'https://g5-api-757475034422.asia-south1.run.app'
 const DEFAULT_BATCH_SIZE = 50
@@ -20,36 +20,49 @@ export class G5Client {
   private superProperties: TrackProperties = {}
   private timedEvents: Map<string, number> = new Map()
   private optedOut = false
+  private flushing = false
 
   public people: People
 
   constructor(token: string, config: G5Config = {}) {
+    if (!token || typeof token !== 'string') {
+      throw new Error('[G5] init() requires a valid project token string')
+    }
+
     this.token = token
     this.config = {
       apiHost: config.apiHost || DEFAULT_API_HOST,
-      batchSize: config.batchSize || DEFAULT_BATCH_SIZE,
-      flushInterval: config.flushInterval || DEFAULT_FLUSH_INTERVAL,
+      batchSize: Math.max(1, Math.min(config.batchSize || DEFAULT_BATCH_SIZE, 2000)),
+      flushInterval: Math.max(1000, config.flushInterval || DEFAULT_FLUSH_INTERVAL),
       debug: config.debug || false,
       persistence: config.persistence || 'localStorage',
       cookieDomain: config.cookieDomain || '',
     }
 
-    this.persistence = new Persistence(token, this.config.persistence)
+    this.persistence = new Persistence(token, this.config.persistence, this.config.cookieDomain)
     this.queue = new EventQueue(this.persistence)
     this.identity = new IdentityManager(this.persistence)
     this.people = new People(this.config.apiHost, token, this.identity)
 
+    // Restore opt-out state
+    this.optedOut = this.persistence.get('opted_out') === 'true'
+
     this.startFlushTimer()
     this.bindPageUnload()
+
+    if (this.config.debug) {
+      console.log('[G5] initialized', { token: token.slice(0, 8) + '...', apiHost: this.config.apiHost })
+    }
   }
 
   track(eventName: string, properties: TrackProperties = {}): void {
     if (this.optedOut) return
+    if (!eventName || typeof eventName !== 'string') return
 
     const now = Date.now()
-    const duration = this.timedEvents.get(eventName)
-    if (duration !== undefined) {
-      properties['$duration'] = (now - duration) / 1000
+    const timedStart = this.timedEvents.get(eventName)
+    if (timedStart !== undefined) {
+      properties['$duration'] = (now - timedStart) / 1000
       this.timedEvents.delete(eventName)
     }
 
@@ -73,7 +86,7 @@ export class G5Client {
     }
 
     if (this.config.debug) {
-      console.log('[G5]', eventName, event.properties)
+      console.log('[G5] track', eventName, event.properties)
     }
   }
 
@@ -83,13 +96,17 @@ export class G5Client {
       $current_url: window.location.href,
       $pathname: window.location.pathname,
       $title: document.title,
+      $referrer: document.referrer || undefined,
       ...properties,
     })
   }
 
   identify(userId: string): void {
+    if (!userId || typeof userId !== 'string') {
+      if (this.config.debug) console.warn('[G5] identify() requires a non-empty string userId')
+      return
+    }
     this.identity.identify(userId)
-    // Track identify event so backend can merge
     this.track('$identify', {})
   }
 
@@ -141,11 +158,11 @@ export class G5Client {
   }
 
   has_opted_out_tracking(): boolean {
-    return this.persistence.get('opted_out') === 'true'
+    return this.optedOut
   }
 
   has_opted_in_tracking(): boolean {
-    return this.persistence.get('opted_out') !== 'true'
+    return !this.optedOut
   }
 
   clear_opt_in_out_tracking(): void {
@@ -154,19 +171,36 @@ export class G5Client {
   }
 
   async flush(): Promise<void> {
-    const events = this.queue.flush()
-    if (events.length === 0) return
+    // Prevent concurrent flushes
+    if (this.flushing) return
+    this.flushing = true
 
     try {
-      await sendEvents(this.config.apiHost, events)
+      const events = this.queue.flush()
+      if (events.length === 0) return
+
+      await sendEvents(this.config.apiHost, this.token, events)
+
+      if (this.config.debug) {
+        console.log(`[G5] flushed ${events.length} events`)
+      }
     } catch (err) {
       if (this.config.debug) console.error('[G5] flush failed', err)
-      // Re-enqueue failed events
-      for (const e of events) this.queue.enqueue(e)
+    } finally {
+      this.flushing = false
     }
   }
 
+  destroy(): void {
+    if (this.flushTimer) {
+      clearInterval(this.flushTimer)
+      this.flushTimer = null
+    }
+    this.flush()
+  }
+
   private startFlushTimer(): void {
+    if (this.flushTimer) clearInterval(this.flushTimer)
     this.flushTimer = setInterval(() => this.flush(), this.config.flushInterval)
   }
 

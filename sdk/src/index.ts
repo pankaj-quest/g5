@@ -6,6 +6,9 @@ let defaultInstance: G5Client | null = null
 // Singleton API (Mixpanel-style usage)
 const G5 = {
   init(token: string, config: G5Config = {}): G5Client {
+    if (defaultInstance) {
+      defaultInstance.destroy()
+    }
     defaultInstance = new G5Client(token, config)
     return defaultInstance
   },
@@ -66,6 +69,10 @@ const G5 = {
     return defaultInstance?.has_opted_in_tracking() ?? true
   },
 
+  clear_opt_in_out_tracking(): void {
+    defaultInstance?.clear_opt_in_out_tracking()
+  },
+
   get people() {
     return defaultInstance?.people
   },
@@ -74,7 +81,11 @@ const G5 = {
     return defaultInstance?.flush() ?? Promise.resolve()
   },
 
-  // Allow creating named instances
+  destroy(): void {
+    defaultInstance?.destroy()
+    defaultInstance = null
+  },
+
   create(token: string, config: G5Config = {}): G5Client {
     return new G5Client(token, config)
   },

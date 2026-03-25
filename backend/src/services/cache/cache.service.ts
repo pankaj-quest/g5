@@ -21,21 +21,25 @@ export async function cacheQuery<T>(
 
   const key = `cache:${prefix}:${hash}`
 
-  try {
-    const cached = await redis.get(key)
-    if (cached) {
-      return JSON.parse(cached)
+  if (redis.status === 'ready') {
+    try {
+      const cached = await redis.get(key)
+      if (cached) {
+        return JSON.parse(cached)
+      }
+    } catch (err) {
+      logger.warn('Redis cache read failed, falling back to compute', { key, err })
     }
-  } catch (err) {
-    logger.warn('Redis cache read failed, falling back to compute', { key, err })
   }
 
   const result = await compute()
 
-  try {
-    await redis.setex(key, ttlSeconds, JSON.stringify(result))
-  } catch (err) {
-    logger.warn('Redis cache write failed', { key, err })
+  if (redis.status === 'ready') {
+    try {
+      await redis.setex(key, ttlSeconds, JSON.stringify(result))
+    } catch (err) {
+      logger.warn('Redis cache write failed', { key, err })
+    }
   }
 
   return result

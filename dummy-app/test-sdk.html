@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>G5 SDK Test</title>
+  <script src="../sdk/dist/index.umd.js"></script>
+</head>
+<body>
+  <h1>G5 SDK Test Page</h1>
+  <div id="log" style="font-family:monospace;white-space:pre;background:#111;color:#0f0;padding:20px;border-radius:8px;"></div>
+
+  <script>
+    const log = (msg) => {
+      document.getElementById('log').textContent += msg + '\n'
+      console.log(msg)
+    }
+
+    async function runTests() {
+      log('=== G5 SDK E2E Test ===\n')
+
+      // Test 1: Init
+      try {
+        G5.init('298f05bfccf08da4db6cb50e2ddfc030', {
+          apiHost: 'https://g5-api-757475034422.asia-south1.run.app',
+          debug: true,
+        })
+        log('[PASS] G5.init() succeeded')
+      } catch (e) {
+        log('[FAIL] G5.init() - ' + e.message)
+        return
+      }
+
+      // Test 2: Track
+      try {
+        G5.track('SDK Test Event', { test: true, page: '/test', timestamp: new Date().toISOString() })
+        log('[PASS] G5.track() succeeded')
+      } catch (e) {
+        log('[FAIL] G5.track() - ' + e.message)
+      }
+
+      // Test 3: Track pageview
+      try {
+        G5.track_pageview({ section: 'test' })
+        log('[PASS] G5.track_pageview() succeeded')
+      } catch (e) {
+        log('[FAIL] G5.track_pageview() - ' + e.message)
+      }
+
+      // Test 4: Identify
+      try {
+        G5.identify('test-user-001')
+        log('[PASS] G5.identify() succeeded')
+      } catch (e) {
+        log('[FAIL] G5.identify() - ' + e.message)
+      }
+
+      // Test 5: Register super properties
+      try {
+        G5.register({ app_version: '1.0.0', platform: 'test' })
+        log('[PASS] G5.register() succeeded')
+      } catch (e) {
+        log('[FAIL] G5.register() - ' + e.message)
+      }
+
+      // Test 6: Track with super properties
+      try {
+        G5.track('After Identify', { step: 'post-identify' })
+        log('[PASS] G5.track() with super props succeeded')
+      } catch (e) {
+        log('[FAIL] G5.track() with super props - ' + e.message)
+      }
+
+      // Test 7: Flush
+      try {
+        await G5.flush()
+        log('[PASS] G5.flush() succeeded')
+      } catch (e) {
+        log('[FAIL] G5.flush() - ' + e.message)
+      }
+
+      // Test 8: People set
+      try {
+        await G5.people?.set({ name: 'Test User', email: 'test@g5.com', plan: 'free' })
+        log('[PASS] G5.people.set() succeeded')
+      } catch (e) {
+        log('[FAIL] G5.people.set() - ' + e.message)
+      }
+
+      // Test 9: People increment
+      try {
+        await G5.people?.increment('login_count', 1)
+        log('[PASS] G5.people.increment() succeeded')
+      } catch (e) {
+        log('[FAIL] G5.people.increment() - ' + e.message)
+      }
+
+      // Test 10: Time event
+      try {
+        G5.time_event('Timed Action')
+        await new Promise(r => setTimeout(r, 500))
+        G5.track('Timed Action', { result: 'success' })
+        log('[PASS] G5.time_event() + track succeeded')
+      } catch (e) {
+        log('[FAIL] G5.time_event() - ' + e.message)
+      }
+
+      // Test 11: Opt out / in
+      try {
+        G5.opt_out_tracking()
+        G5.track('Should Not Track', {})
+        G5.opt_in_tracking()
+        G5.track('Should Track After Opt In', {})
+        log('[PASS] G5.opt_out/in_tracking() succeeded')
+      } catch (e) {
+        log('[FAIL] G5.opt_out/in - ' + e.message)
+      }
+
+      // Test 12: Final flush
+      try {
+        await G5.flush()
+        log('[PASS] Final flush succeeded')
+      } catch (e) {
+        log('[FAIL] Final flush - ' + e.message)
+      }
+
+      log('\n=== All tests complete ===')
+      log('Check the G5 dashboard for events.')
+    }
+
+    runTests()
+  </script>
+</body>
+</html>

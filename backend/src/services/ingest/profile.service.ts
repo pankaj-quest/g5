@@ -64,7 +64,8 @@ export async function applyProfileOperation(
     const profile = await UserProfile.findOne({ projectId, distinctId: $distinct_id }).lean()
     const setOnceOps: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(payload.$set_once)) {
-      if (!profile?.properties || !(profile.properties as unknown as Map<string, unknown>).has?.(k)) {
+      const props = profile?.properties as Record<string, unknown> | undefined
+      if (!props || !(k in props)) {
         setOnceOps[`properties.${k}`] = v
       }
     }
