@@ -1,6 +1,6 @@
 {
   "name": "g5-analytics",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Developer-first analytics SDK. Track events, identify users, and analyze behavior.",
   "author": "pankaj-quest",
   "license": "MIT",
@@ -9,10 +9,18 @@
     "url": "https://github.com/pankaj-quest/g5"
   },
   "keywords": ["analytics", "tracking", "events", "mixpanel", "g5"],
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.esm.js",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
   "browser": "dist/index.umd.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "files": ["dist"],
   "scripts": {
     "build": "rollup -c rollup.config.ts --configPlugin typescript",

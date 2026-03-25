@@ -5,19 +5,29 @@ import terser from '@rollup/plugin-terser'
 import { defineConfig } from 'rollup'
 
 export default defineConfig([
+  // ESM build
   {
     input: 'src/index.ts',
-    output: [
-      { file: 'dist/index.esm.js', format: 'esm', sourcemap: true },
-      { file: 'dist/index.cjs.js', format: 'cjs', sourcemap: true },
-      {
-        file: 'dist/index.umd.js',
-        format: 'umd',
-        name: 'G5',
-        sourcemap: true,
-        plugins: [terser()],
-      },
-    ],
+    output: { file: 'dist/index.mjs', format: 'esm', sourcemap: true },
+    plugins: [resolve({ browser: true }), commonjs(), typescript({ tsconfig: './tsconfig.json' })],
+  },
+  // CJS build
+  {
+    input: 'src/cjs-entry.ts',
+    output: { file: 'dist/index.cjs', format: 'cjs', sourcemap: true, exports: 'default' },
+    plugins: [resolve({ browser: true }), commonjs(), typescript({ tsconfig: './tsconfig.json' })],
+  },
+  // UMD build
+  {
+    input: 'src/cjs-entry.ts',
+    output: {
+      file: 'dist/index.umd.js',
+      format: 'umd',
+      name: 'G5',
+      sourcemap: true,
+      exports: 'default',
+      plugins: [terser()],
+    },
     plugins: [resolve({ browser: true }), commonjs(), typescript({ tsconfig: './tsconfig.json' })],
   },
 ])
