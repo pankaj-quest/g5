@@ -170,7 +170,7 @@ export class G5Client {
     this.optedOut = false
   }
 
-  async flush(): Promise<void> {
+  async flush(useBeacon = false): Promise<void> {
     // Prevent concurrent flushes
     if (this.flushing) return
     this.flushing = true
@@ -179,7 +179,7 @@ export class G5Client {
       const events = this.queue.flush()
       if (events.length === 0) return
 
-      await sendEvents(this.config.apiHost, this.token, events)
+      await sendEvents(this.config.apiHost, this.token, events, useBeacon)
 
       if (this.config.debug) {
         console.log(`[G5] flushed ${events.length} events`)
@@ -207,9 +207,9 @@ export class G5Client {
   private bindPageUnload(): void {
     if (typeof window !== 'undefined') {
       window.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') this.flush()
+        if (document.visibilityState === 'hidden') this.flush(true)
       })
-      window.addEventListener('beforeunload', () => this.flush())
+      window.addEventListener('beforeunload', () => this.flush(true))
     }
   }
 

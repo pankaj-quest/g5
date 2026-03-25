@@ -2,25 +2,26 @@ import { QueuedEvent } from '../types/index.js'
 
 /**
  * Send batch of events to /import endpoint.
- * Includes x-g5-token header for authentication.
- * Falls back from sendBeacon → fetch with keepalive.
+ * Uses fetch with x-g5-token header.
+ * sendBeacon is only used as last resort on page unload (no custom headers possible).
  */
 export async function sendEvents(
   apiHost: string,
   token: string,
-  events: QueuedEvent[]
+  events: QueuedEvent[],
+  useBeacon = false
 ): Promise<void> {
   const url = `${apiHost}/import`
   const payload = events.map((e) => ({ event: e.event, properties: e.properties }))
   const body = JSON.stringify(payload)
 
-  // sendBeacon for page-unload (can't set custom headers, token is in payload)
-  if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+  // sendBeacon only for page-unload (can't set headers, token must be in payload properties)
+  if (useBeacon && typeof navigator !== 'undefined' && navigator.sendBeacon) {
     const blob = new Blob([body], { type: 'application/json' })
     if (navigator.sendBeacon(url, blob)) return
   }
 
-  // Fallback: fetch with token header
+  // Primary: fetch with proper auth header
   await fetch(url, {
     method: 'POST',
     headers: {
