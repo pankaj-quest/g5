@@ -33,7 +33,6 @@ export async function publishEvent(projectId: string, payload: Record<string, un
   topic.publishMessage({
     data,
     attributes: { projectId },
-    orderingKey: projectId, // ensures ordering per project
   }).catch((err) => {
     logger.error('Failed to publish event to Pub/Sub', { err })
   })
@@ -52,7 +51,6 @@ export async function publishEventBatch(projectId: string, events: Record<string
     topic.publishMessage({
       data: Buffer.from(JSON.stringify(event)),
       attributes: { projectId },
-      orderingKey: projectId,
     }).catch((err) => {
       logger.error('Failed to publish batch event to Pub/Sub', { err })
     })
